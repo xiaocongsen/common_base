@@ -47,10 +47,9 @@ bool RabbitMqInOut::CreateSendChannel()
     return true;
 }
 
-void RabbitMqInOut::PurgeThisQueue()
+void RabbitMqInOut::PurgeThisQueue()    //删除队列数据
 {
     m_Channel->PurgeQueue(m_strQueueName);
-    sleep(2);
 }
 
 void RabbitMqInOut::CloseChannel()

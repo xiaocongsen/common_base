@@ -1,14 +1,5 @@
 #include "httpBase.h"
 
-// char httpBase::data[8192];
-// int httpBase::curIndex;
-// size_t httpBase::write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
-// {
-//     int len = size * nmemb;
-//     memcpy(data + curIndex, ptr, len);
-//     curIndex += len;
-//     return len;
-// }
 
 bool httpBase::initPostCurl(const char *uil,void *write_callback)
 {
@@ -55,7 +46,7 @@ bool httpBase::SendExec()
         CURLcode res = curl_easy_perform(m_EasyHandle);
         if (res != CURLE_OK)
         {
-            std::cout << "error SendPacket curl_easy_perform res = " << res << std::endl;
+            Log("error SendPacket curl_easy_perform res = %d" , res);
             return false;
         }
     }

@@ -78,6 +78,7 @@ void RapidJsonBase::GetTypeData(void *data, DATATYPE type, const char *Val)
     }
     default:
     {
+        Log("error");
         throw Val;
     }
     }

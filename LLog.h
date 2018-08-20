@@ -1,40 +1,23 @@
 #ifndef L_LOG_H
 #define L_LOG_H
-#include "httpBase.h"
-#include "CCfg.h"
 
-class LLog
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+
+static void myLog(const char* file, int line, const char* fmt, ...)
 {
-  private:
-    // 禁止拷贝、赋值
-    LLog(const LLog &);
-    LLog &operator=(const LLog &);
-    LLog()
-    {
-        m_Http = new httpBase;
-        pthread_mutex_init(&mutex, NULL);
-        // m_DataStr =  "{\"ModuleID\":222,\"ModuleName\":\"entruct\",\"MsgGrade\":\"%s\",\"MsgTime\":\"2018-07-19T12:23:00Z\",\"FileName\":\"%s\",\"ApiName\":\"%s\",\"Descript\":\"%s\",\"MsgContent\":\"%s\",\"Coder\":\"xiaocongsen\",\"IPAddress\":\"192.168.1.x\"}";
-    }
+    static char* buf = (char*)malloc(409600);
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, 409600, fmt, ap);
+    va_end(ap);
+    printf("---------------------------------------\n%s, %d\n%s\n", file, line, buf);
+}
+#define Log(fmt, args...) myLog(__FILE__, __LINE__, fmt, ##args);
+#define TR Log
+#define DEBUG Log
 
-  public:
-    ~LLog() {}
-    static void InitLogObj(int ModuleID, const char *DataStr);
+// #define DUMP printf
 
-    static void WriteLog(const char *MsgGrade, const char *FileName, const char *ApiName, const char *MsgContent);
-    bool InitLog(int ModuleID, const char *DataStr)
-    {
-        m_DataStr = DataStr;
-        m_ModuleID = ModuleID;
-        return m_Http->initPostCurl(CCfg::getValue("LogUil"),NULL);
-    }
-    void SendLog(const char *MsgGrade,const char *TimeStr, const char *FileName, const char *ApiName, const char *MsgContent);
-    
-    pthread_mutex_t mutex;
-  private:
-    
-    int m_ModuleID;
-    httpBase *m_Http;
-    const char *m_DataStr;
-};
-
-#endif //L_LOG_H
+#endif

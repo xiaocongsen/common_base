@@ -26,14 +26,12 @@ CCfg::CCfg(const char *pCfgFile) : m_KeyVal(NULL)
 		{
 				const char *key2value[] = {
 				"/* 默认配置文件 */\n\n"
-				"MarketId = USDT\n"
-				"CoinId = BTC\n"
 				"ThreadCount = 3\n"
 				"DBIP = 192.168.1.201\n"
 				"DBPort = 3306\n"
 				"USER = root\n"
 				"PASSWD = Aa123456\n"
-				"DataBaseName = onerootbeta\n"
+				"DataBaseName = beta\n"
 				"LogUil = 192.168.1.203:5000/programExceptionLog\n"
 			};
 			createFile(pCfgFile, key2value, (int)(sizeof(key2value) / sizeof(key2value[0]))); // 创建配置文件
@@ -184,8 +182,7 @@ void CCfg::add(const char *key2value, bool isUpdate)
 			pUpKV = pUpKV->pNext;
 		}
 		// 新增加的配置项
-		Key2Value *kv = NULL;
-		NEW(kv, Key2Value(key2value, keyLen, pFind, valueLen));
+		Key2Value *kv = new Key2Value(key2value, keyLen, pFind, valueLen);
 		kv->pNext = m_KeyVal;
 		m_KeyVal = kv;
 	}
@@ -246,7 +243,7 @@ void CCfg::output()
 	Key2Value *pOutput = m_KeyVal;
 	while (pOutput != NULL)
 	{
-		printf("kv = %p, key = %s, value = %s\n", pOutput, pOutput->key, pOutput->value);
+		Log("kv = %p, key = %s, value = %s\n", pOutput, pOutput->key, pOutput->value);
 		pOutput = pOutput->pNext;
 	}
 }

@@ -222,7 +222,7 @@ MeMysql::~MeMysql()
 // 		int updatecount = prep_stmt->executeUpdate();
 // 		if(updatecount == 0)
 // 		{
-// 			printf("no rows update\n");
+// 			Log("no rows update\n");
 // 			return;
 // 		}
 // 		ExeCommit();

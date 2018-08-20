@@ -3,9 +3,8 @@
 
 
 #include <curl/multi.h>
-#include <iostream>
 #include <string.h>
-using namespace std;
+#include "LLog.h"
 class httpBase
 {
 public:

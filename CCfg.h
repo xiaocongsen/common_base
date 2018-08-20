@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <unordered_map>
+#include "stdafx.h"
 
 static const int CfgKeyValueLen = 128;         // 配置文件名值对字符串的最大长度
 static const int MaxFullLen = 2048;            // 支持的最大全路径文件名长度
@@ -13,27 +14,7 @@ static const int MinConnectPort = 2000;        // socket主动建立连接的最
 
 static const int StrIntLen = 32;
 typedef char strInt_t[StrIntLen];   // 整型
-// new & delete 宏定义，防止内存操作失败抛出异常
-#define NEW(pointer, ClassType)     \
-    try                             \
-	{                               \
-		pointer = new ClassType;    \
-	}                               \
-	catch(...)                      \
-	{                               \
-		pointer = NULL;             \
-	}
 
-#define DELETE(pointer)             \
-    try                             \
-	{                               \
-		delete pointer;             \
-		pointer = NULL;             \
-	}                               \
-	catch(...)                      \
-	{                               \
-		pointer = NULL;             \
-	}
 struct Key2Value
 {
 	char key[CfgKeyValueLen];

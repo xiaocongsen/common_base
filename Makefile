@@ -32,4 +32,5 @@ debug:
 	sudo cp $(LIB_DYNAMIC_OBJECT) /usr/lib/
 
 clean:
-	rm  -rf $(OBJS)
+	# rm  -rf $(OBJS)
+	rm *.o

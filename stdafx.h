@@ -7,9 +7,32 @@
 #include <iostream>
 #include "decimal.h"
 #include "LLog.h"
+#include "HttpLog.h"
+
 #define MAXNUM 37
 #define Max(a, b) (((a) > (b)) ? (a) : (b))
 #define Min(a, b) (((a) > (b)) ? (b) : (a))
+// new & delete 宏定义，防止内存操作失败抛出异常
+#define NEW(pointer, ClassType)     \
+    try                             \
+	{                               \
+		pointer = new ClassType;    \
+	}                               \
+	catch(...)                      \
+	{                               \
+		pointer = NULL;             \
+	}
+
+#define DELETE(pointer)             \
+    try                             \
+	{                               \
+		delete pointer;             \
+		pointer = NULL;             \
+	}                               \
+	catch(...)                      \
+	{                               \
+		pointer = NULL;             \
+	}
 
 // 位数组定义
 #ifndef CHAR_BIT
