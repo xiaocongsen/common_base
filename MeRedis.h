@@ -7,6 +7,9 @@
 #include <hiredis/hiredis.h>
 #include <iostream>
 #include <vector>
+#include <unistd.h>
+#include <assert.h>
+#include "stdafx.h"
 
 using namespace std;
 class MeRedis

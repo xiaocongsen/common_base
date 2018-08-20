@@ -1,6 +1,4 @@
 #include "MeRedis.h"
-#include "unistd.h"
-#include <assert.h>
 
 MeRedis::MeRedis(const char *ip, const char *database, const char *passwd, int port) : m_Context(nullptr)
 {
@@ -38,7 +36,7 @@ redisReply *MeRedis::TryExecCmd(const char *Cmd, int tryNum)
 
         if (++tryCount == tryNum || (NULL == ret && tryCount == tryNum))
         {
-            printf("%d execute command:%s failure\n", __LINE__, Cmd);
+            Log("execute command:%s failure\n", Cmd);
             return ret;
         }
         else
@@ -47,12 +45,12 @@ redisReply *MeRedis::TryExecCmd(const char *Cmd, int tryNum)
             {
                 if (!CreateConnection())
                 {
-                    cout << "reconnect redis fail" << endl;
+                    Log("reconnect redis fail\n");
                     return ret;
                 }
             }
             usleep(50);
-            cout << "retry cmd:" << Cmd << endl;
+            Log("retry cmd: %s \n",Cmd);
         }
     }
 
@@ -78,7 +76,7 @@ bool MeRedis::CreateConnection()
     this->m_Context = redisConnect(m_Ip.c_str(), m_Port);
     if (m_Context->err)
     {
-        printf("%d connect redis server failure:%s\n", __LINE__, m_Context->errstr);
+        Log("connect redis server failure:%s\n", m_Context->errstr);
         return false;
     }
     std::string cmd;
@@ -92,20 +90,20 @@ bool MeRedis::CreateConnection()
         {
             return false;
         }
-        std::cout << "connect to redis:" << m_Reply->str << std::endl;
+        Log("connect to redis: %s \n", m_Reply->str);
 
         freeReplyObject(m_Reply); //free to avoid leaking
         m_Reply = nullptr;
     }
     else
-        std::cout << "connect to redis:" << std::endl;
+        Log("m_password.empty() \n");
 
     cmd = "SELECT ";
     cmd += m_DataBase;
     m_Reply = (redisReply *)redisCommand(m_Context, cmd.c_str());
     if (NULL == m_Reply)
     {
-        printf("%d execute command:%s failure\n", __LINE__, cmd.c_str());
+        Log("execute command:%s failure\n", cmd.c_str());
         return false;
     }
     freeReplyObject(m_Reply); //free to avoid leaking
@@ -120,7 +118,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::string &result)
     {
         if (NULL == cmd)
         {
-            printf("NULL pointer");
+            Log("NULL pointer\n");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -139,7 +137,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::string &result)
         //返回执行结果为整型的命令,只有状态为REDIS_REPLY_INTEGER,并且INTEGER是大于0时,才表示这种类型的命令执行成功
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
-            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
+            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -169,7 +167,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd)
     {
         if (NULL == cmd)
         {
-            printf("NULL pointer");
+            Log("NULL pointer\n");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -180,7 +178,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd)
 
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
-            cout << "cmd return nil result" << endl;
+            Log("cmd return nil result\n");
             freeReplyObject(m_Reply); //free to avoid leaking
             return true;
         }
@@ -188,7 +186,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd)
         //返回执行结果为整型的命令,只有状态为REDIS_REPLY_INTEGER,并且INTEGER是大于0时,才表示这种类型的命令执行成功
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
-            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
+            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -210,7 +208,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, int &result)
     {
         if (NULL == cmd)
         {
-            printf("NULL pointer");
+            Log("NULL pointer\n");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -221,14 +219,14 @@ bool MeRedis::ExeRedisCmd(const char *cmd, int &result)
 
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
-            cout << "cmd return nil result" << endl;
+            Log("cmd return nil result\n");
             freeReplyObject(m_Reply); //free to avoid leaking
             return true;
         }
         //返回执行结果为整型的命令,只有状态为REDIS_REPLY_INTEGER,并且INTEGER是大于0时,才表示这种类型的命令执行成功
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
-            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
+            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -251,7 +249,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
     {
         if (NULL == cmd)
         {
-            printf("NULL pointer");
+            Log("NULL pointer\n");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -262,7 +260,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
 
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
-            cout << "cmd return nil result" << endl;
+            Log("cmd return nil result\n");
             freeReplyObject(m_Reply); //free to avoid leaking
             return true;
         }
@@ -271,7 +269,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
 
-            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
+            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
