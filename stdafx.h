@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include "objectpool.hpp"
+#include "Heap.hpp"
 #include "decimal.h"
 #include "LLog.h"
 #include "HttpLog.h"
