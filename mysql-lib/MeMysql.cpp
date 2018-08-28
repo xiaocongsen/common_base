@@ -7,7 +7,7 @@ bool MeMysql::InitMysqlData()
         m_Driver = sql::mysql::get_driver_instance();
         if(m_Driver == NULL)
         {
-            std::cout << "get driver err\n";
+            Log("get driver err\n");
             return false;
         }
         m_Conn = m_Driver->connect(m_Url, m_User, m_Password); //create a conn
@@ -73,7 +73,7 @@ ResultSet *MeMysql::PerformSelectCmd(char *Cmd)
     {
         if (!IsAliveConn())
         {
-            std::cout << "m_Conn->isValid() = true" << std::endl;
+            Log("m_Conn->isValid() = true\n");
             return NULL;
         }
         if(!m_State)
@@ -96,7 +96,7 @@ int MeMysql::PerformUpdateCmd(char *Cmd)
     {
         if (!IsAliveConn())
         {
-            std::cout << "m_Conn->isValid() = true" << std::endl;
+            Log("m_Conn->isValid() = true\n");
             return 0;
             // m_Conn->reconnect();
         }
@@ -121,7 +121,7 @@ int MeMysql::PerformInstallCmd(char *Cmd)
     {
         if (!IsAliveConn())
         {
-            std::cout << "m_Conn->isValid() = true" << std::endl;
+            Log("m_Conn->isValid() = true\n");
             return 0;
             // m_Conn->reconnect();
         }
@@ -145,7 +145,7 @@ ResultSet *MeMysql::ExecuteStoredProcedure(char *exeCmd, char *resCmd)
     {
         if (!IsAliveConn())
         {
-            std::cout << "m_Conn->isValid() = true" << std::endl;
+            Log("m_Conn->isValid() = true\n");
             return NULL;
             // m_Conn->reconnect();
         }

@@ -12,6 +12,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/prepared_statement.h>
 #include <cppconn/statement.h>
+#include "stdafx.h"
 
 using namespace sql;
 class MeMysql

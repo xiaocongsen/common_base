@@ -1,5 +1,5 @@
-#ifndef ME_REDIS_H
-#define ME_REDIS_H
+#ifndef REDISPROVIDER_H
+#define REDISPROVIDER_H
 
 #include <stdio.h>
 #include <string.h>
@@ -7,16 +7,16 @@
 #include <hiredis/hiredis.h>
 #include <iostream>
 #include <vector>
+#include "stdafx.h"
 #include <unistd.h>
 #include <assert.h>
-#include "stdafx.h"
 
 using namespace std;
-class MeRedis
+class RedisProvider
 {
 public:
-  MeRedis(const char *host, const char *database, const char *passwd, int port);
-  ~MeRedis();
+  RedisProvider(const char *host, const char *database, const char *passwd, int port);
+  ~RedisProvider();
   bool CheckConnection();
   bool CreateConnection();
   void DestoryConnection();
@@ -55,6 +55,9 @@ public:
   /////////////////////////////////////////////////////////////////////////////////
 
   /* ZSet Table Methods*/
+  bool SetValueInSetTable(string &tablename, string &Val);
+
+  bool SetTableTTL(string &tablename, int timeOut);
 
   bool CheckKeyExistsInZset(std::string &table, std::string &key);
 
@@ -67,7 +70,7 @@ public:
 
   bool LPop(string table);
 
-  bool PublishMsg(std::string &topic, std::string &msg);
+  bool PublishMsg(std::string &topic,const std::string &msg);
 
   bool UpdateSortedSetByScore(string &table, string &score, string &newInfo);
 
@@ -83,4 +86,4 @@ public:
   redisReply *m_Reply;
 };
 
-#endif //ME_REDIS_H
+#endif //REDISPROVIDER_H

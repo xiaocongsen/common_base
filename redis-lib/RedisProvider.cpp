@@ -1,6 +1,7 @@
-#include "MeRedis.h"
+#include "RedisProvider.h"
+#include "unistd.h"
 
-MeRedis::MeRedis(const char *ip, const char *database, const char *passwd, int port) : m_Context(nullptr)
+RedisProvider::RedisProvider(const char *ip, const char *database, const char *passwd, int port) : m_Context(nullptr)
 {
     this->m_Ip = ip;
     this->m_DataBase = database;
@@ -9,7 +10,7 @@ MeRedis::MeRedis(const char *ip, const char *database, const char *passwd, int p
     CreateConnection();
 }
 
-bool MeRedis::CheckConnection()
+bool RedisProvider::CheckConnection()
 {
     bool ret = false;
 
@@ -22,7 +23,7 @@ bool MeRedis::CheckConnection()
     return ret;
 }
 
-redisReply *MeRedis::TryExecCmd(const char *Cmd, int tryNum)
+redisReply *RedisProvider::TryExecCmd(const char *Cmd, int tryNum)
 {
     int tryCount = 0;
     redisReply *ret = nullptr;
@@ -36,7 +37,7 @@ redisReply *MeRedis::TryExecCmd(const char *Cmd, int tryNum)
 
         if (++tryCount == tryNum || (NULL == ret && tryCount == tryNum))
         {
-            Log("execute command:%s failure\n", Cmd);
+            printf("%d execute command:%s failure\n", __LINE__, Cmd);
             return ret;
         }
         else
@@ -45,19 +46,19 @@ redisReply *MeRedis::TryExecCmd(const char *Cmd, int tryNum)
             {
                 if (!CreateConnection())
                 {
-                    Log("reconnect redis fail\n");
+                    cout << "reconnect redis fail" << endl;
                     return ret;
                 }
             }
             usleep(50);
-            Log("retry cmd: %s \n",Cmd);
+            cout << "retry cmd:" << Cmd << endl;
         }
     }
 
     return ret;
 }
 
-bool MeRedis::CreateConnection()
+bool RedisProvider::CreateConnection()
 {
     if (this->m_Context != nullptr)
     {
@@ -71,14 +72,14 @@ bool MeRedis::CreateConnection()
             return false;
         }
     }
-    assert(this->m_Context == nullptr);
 
     this->m_Context = redisConnect(m_Ip.c_str(), m_Port);
     if (m_Context->err)
     {
-        Log("connect redis server failure:%s\n", m_Context->errstr);
+        printf("%d connect redis server failure:%s\n", __LINE__, m_Context->errstr);
         return false;
     }
+
     std::string cmd;
     if (!m_password.empty())
     {
@@ -90,20 +91,20 @@ bool MeRedis::CreateConnection()
         {
             return false;
         }
-        Log("connect to redis: %s \n", m_Reply->str);
+        std::cout << "connect to redis:" << m_Reply->str << std::endl;
 
         freeReplyObject(m_Reply); //free to avoid leaking
         m_Reply = nullptr;
     }
     else
-        Log("m_password.empty() \n");
+        std::cout << "connect to redis:" << std::endl;
 
     cmd = "SELECT ";
     cmd += m_DataBase;
     m_Reply = (redisReply *)redisCommand(m_Context, cmd.c_str());
     if (NULL == m_Reply)
     {
-        Log("execute command:%s failure\n", cmd.c_str());
+        printf("%d execute command:%s failure\n", __LINE__, cmd.c_str());
         return false;
     }
     freeReplyObject(m_Reply); //free to avoid leaking
@@ -112,13 +113,13 @@ bool MeRedis::CreateConnection()
     return true;
 }
 
-bool MeRedis::ExeRedisCmd(const char *cmd, std::string &result)
+bool RedisProvider::ExeRedisCmd(const char *cmd, std::string &result)
 {
     try
     {
         if (NULL == cmd)
         {
-            Log("NULL pointer\n");
+            printf("NULL pointer");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -130,14 +131,13 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::string &result)
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
             result.clear();
-            freeReplyObject(m_Reply); //free to avoid leaking
             return true;
         }
 
         //返回执行结果为整型的命令,只有状态为REDIS_REPLY_INTEGER,并且INTEGER是大于0时,才表示这种类型的命令执行成功
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
-            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
+            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -161,13 +161,13 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::string &result)
     }
 }
 
-bool MeRedis::ExeRedisCmd(const char *cmd)
+bool RedisProvider::ExeRedisCmd(const char *cmd)
 {
     try
     {
         if (NULL == cmd)
         {
-            Log("NULL pointer\n");
+            printf("NULL pointer");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -178,15 +178,14 @@ bool MeRedis::ExeRedisCmd(const char *cmd)
 
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
-            Log("cmd return nil result\n");
-            freeReplyObject(m_Reply); //free to avoid leaking
+            cout << "cmd return nil result" << endl;
             return true;
         }
 
         //返回执行结果为整型的命令,只有状态为REDIS_REPLY_INTEGER,并且INTEGER是大于0时,才表示这种类型的命令执行成功
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
-            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
+            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -202,13 +201,13 @@ bool MeRedis::ExeRedisCmd(const char *cmd)
     }
 }
 
-bool MeRedis::ExeRedisCmd(const char *cmd, int &result)
+bool RedisProvider::ExeRedisCmd(const char *cmd, int &result)
 {
     try
     {
         if (NULL == cmd)
         {
-            Log("NULL pointer\n");
+            printf("NULL pointer");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -219,14 +218,13 @@ bool MeRedis::ExeRedisCmd(const char *cmd, int &result)
 
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
-            Log("cmd return nil result\n");
-            freeReplyObject(m_Reply); //free to avoid leaking
+            cout << "cmd return nil result" << endl;
             return true;
         }
         //返回执行结果为整型的命令,只有状态为REDIS_REPLY_INTEGER,并且INTEGER是大于0时,才表示这种类型的命令执行成功
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
-            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
+            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -243,13 +241,13 @@ bool MeRedis::ExeRedisCmd(const char *cmd, int &result)
     }
 }
 
-bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
+bool RedisProvider::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
 {
     try
     {
         if (NULL == cmd)
         {
-            Log("NULL pointer\n");
+            printf("NULL pointer");
             return false;
         }
         m_Reply = TryExecCmd(cmd);
@@ -260,8 +258,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
 
         if (m_Reply->type == REDIS_REPLY_NIL)
         {
-            Log("cmd return nil result\n");
-            freeReplyObject(m_Reply); //free to avoid leaking
+            cout << "cmd return nil result" << endl;
             return true;
         }
 
@@ -269,7 +266,7 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
         if ((m_Reply->type == REDIS_REPLY_INTEGER) && m_Reply->integer < 0)
         {
 
-            Log("execute command:[%s] failure cmd = [%s]\n", m_Reply->str, cmd);
+            printf("%d execute command:[%s] failure cmd = [%s]\n", __LINE__, m_Reply->str, cmd);
             freeReplyObject(m_Reply); //free to avoid leaking
             m_Reply = nullptr;
             return false;
@@ -304,35 +301,35 @@ bool MeRedis::ExeRedisCmd(const char *cmd, std::vector<std::string> &vreply)
     }
 }
 
-bool MeRedis::StartTransaction()
+bool RedisProvider::StartTransaction()
 {
     string cmd0 = "MULTI";
 
     return ExeRedisCmd(cmd0.c_str());
 }
 
-bool MeRedis::CommitTransaction()
+bool RedisProvider::CommitTransaction()
 {
     string cmd3 = "EXEC";
 
     return ExeRedisCmd(cmd3.c_str());
 }
 
-void MeRedis::DestoryConnection()
+void RedisProvider::DestoryConnection()
 {
     //freeReplyObject(m_Reply);
     redisFree(m_Context);
     m_Context = nullptr;
 }
 
-bool MeRedis::ConnectDb(std::string &index)
+bool RedisProvider::ConnectDb(std::string &index)
 {
     string cmd = "SELECT " + index;
 
     return ExeRedisCmd(cmd.c_str());
 }
 
-bool MeRedis::GetAllKeyInDb(vector<string> &keys)
+bool RedisProvider::GetAllKeyInDb(vector<string> &keys)
 {
     string cmd = "KEYS *";
 
@@ -344,7 +341,7 @@ bool MeRedis::GetAllKeyInDb(vector<string> &keys)
     return true;
 }
 
-bool MeRedis::CheckHashTableExist(string &tablename)
+bool RedisProvider::CheckHashTableExist(string &tablename)
 {
     string cmd = "EXISTS " + tablename;
 
@@ -354,7 +351,7 @@ bool MeRedis::CheckHashTableExist(string &tablename)
     return (num > 0);
 }
 
-bool MeRedis::CheckKeyExistsInTable(std::string &table, std::string &key)
+bool RedisProvider::CheckKeyExistsInTable(std::string &table, std::string &key)
 {
     string cmd = "HEXISTS " + table + " " + key;
 
@@ -364,14 +361,14 @@ bool MeRedis::CheckKeyExistsInTable(std::string &table, std::string &key)
     return (num > 0);
 }
 
-bool MeRedis::DelTable(string &tablename)
+bool RedisProvider::DelTable(string &tablename)
 {
     string cmd = "DEL " + tablename;
 
     return ExeRedisCmd(cmd.c_str());
 }
 
-bool MeRedis::CheckTableExist(std::string &tablename)
+bool RedisProvider::CheckTableExist(std::string &tablename)
 {
     string cmd = "EXISTS " + tablename;
 
@@ -381,14 +378,14 @@ bool MeRedis::CheckTableExist(std::string &tablename)
     return num > 0;
 }
 
-bool MeRedis::GetValueFromHashTable(string &tablename, string &key, string &val /*out*/)
+bool RedisProvider::GetValueFromHashTable(string &tablename, string &key, string &val /*out*/)
 {
     string cmd = "HGET " + tablename + " " + key;
 
     return ExeRedisCmd(cmd.c_str(), val);
 }
 
-bool MeRedis::SetValueInHashTable(string &tablename, string &key, string &newVal)
+bool RedisProvider::SetValueInHashTable(string &tablename, string &key, string &newVal)
 {
     string cmd = "HMSET " + tablename + " " + key + " " + newVal;
 
@@ -398,14 +395,35 @@ bool MeRedis::SetValueInHashTable(string &tablename, string &key, string &newVal
     return (ret == "OK");
 }
 
-bool MeRedis::DelKeyInHashTable(std::string &tablename, std::string &key)
+bool RedisProvider::SetValueInSetTable(string &tablename, string &Val)
+{
+    string cmd = "SADD " + tablename + " " + Val;
+
+    int num = 0;
+    ExeRedisCmd(cmd.c_str(), num);
+
+    return num > 0;
+}
+
+bool RedisProvider::SetTableTTL(string &tablename, int timeOut)
+{
+    string sTimeOut = to_string(timeOut);
+    string cmd = "EXPIRE " + tablename + " " + sTimeOut;
+
+    int num = 0;
+    ExeRedisCmd(cmd.c_str(), num);
+
+    return num > 0;
+}
+
+bool RedisProvider::DelKeyInHashTable(std::string &tablename, std::string &key)
 {
     string cmd = "HDEL " + tablename + " " + key;
 
     return ExeRedisCmd(cmd.c_str());
 }
 
-bool MeRedis::CheckKeyExistsInZset(string &table, string &key)
+bool RedisProvider::CheckKeyExistsInZset(string &table, string &key)
 {
     string cmd = "ZRANGEBYSCORE " + table + " " + key + " " + key;
 
@@ -419,9 +437,11 @@ bool MeRedis::CheckKeyExistsInZset(string &table, string &key)
         return ret;
 }
 
-bool MeRedis::GetValueFromZset(string &tablename, string &key, string &val)
+bool RedisProvider::GetValueFromZset(string &tablename, string &key, string &val)
 {
     string cmd = "ZRANGEBYSCORE " + tablename + " " + key + " " + key;
+
+    //cout << "cmd:" << cmd << endl;
 
     vector<string> res;
     bool ret = ExeRedisCmd(cmd.c_str(), res);
@@ -435,7 +455,7 @@ bool MeRedis::GetValueFromZset(string &tablename, string &key, string &val)
     return ret;
 }
 
-bool MeRedis::SetValueInZset(string &tablename, string &key, string &newVal)
+bool RedisProvider::SetValueInZset(string &tablename, string &key, string &newVal)
 {
     StartTransaction();
     bool ret = UpdateSortedSetByScore(tablename, key, newVal);
@@ -444,29 +464,29 @@ bool MeRedis::SetValueInZset(string &tablename, string &key, string &newVal)
     return ret;
 }
 
-bool MeRedis::DelKeyInZset(string &tablename, string &key)
+bool RedisProvider::DelKeyInZset(string &tablename, string &key)
 {
     string cmd1 = "ZREMRANGEBYSCORE " + tablename + " " + key + " " + key;
 
     return ExeRedisCmd(cmd1.c_str());
 }
 
-bool MeRedis::LPop(string table)
+bool RedisProvider::LPop(string table)
 {
     string cmd = "LPOP " + table;
     return ExeRedisCmd(cmd.c_str());
 }
 
-bool MeRedis::PublishMsg(std::string &topic, std::string &msg)
+bool RedisProvider::PublishMsg(std::string &topic,const std::string &msg)
 {
     string cmd = "PUBLISH " + topic + " " + msg;
 
-    //cout << cmd << endl;
+    // cout << cmd << endl;
 
     return ExeRedisCmd(cmd.c_str());
 }
 
-bool MeRedis::UpdateSortedSetByScore(string &table, string &score, string &newInfo)
+bool RedisProvider::UpdateSortedSetByScore(string &table, string &score, string &newInfo)
 {
     bool ret = true;
 
@@ -476,14 +496,14 @@ bool MeRedis::UpdateSortedSetByScore(string &table, string &score, string &newIn
 
     string cmd2 = "ZADD " + table + " " + score + " " + newInfo;
 
-    cout << cmd2 << endl;
+    // cout << cmd2 << endl;
 
     ret = ret && ExeRedisCmd(cmd2.c_str());
 
     return ret;
 }
 
-bool MeRedis::GetValueFromZsetByIndex(string &table, int index, string &res)
+bool RedisProvider::GetValueFromZsetByIndex(string &table, int index, string &res)
 {
     string sindex = to_string(index);
     string cmd = "ZRANGE " + table + " " + sindex + " " + sindex;
@@ -491,7 +511,7 @@ bool MeRedis::GetValueFromZsetByIndex(string &table, int index, string &res)
     return ExeRedisCmd(cmd.c_str(), res);
 }
 
-MeRedis::~MeRedis()
+RedisProvider::~RedisProvider()
 {
     DestoryConnection();
 }

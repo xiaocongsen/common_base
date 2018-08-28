@@ -40,7 +40,7 @@
 #include <iomanip>
 #include <sstream>
 #include <locale>
-
+#include <cmath>
 // --> include headers for limits and int64_t
 
 #ifndef DEC_NO_CPP11

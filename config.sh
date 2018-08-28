@@ -81,8 +81,22 @@ if [ ! -d "libuuid-1.0.3" ]; then
     cd ../
 fi
 
-# 回到 common-base 目录
-cd common-base/
+# 回到 common-base-lib 目录
+cd common-base-lib/
 # 编译生成Base库
 make clean
 make install
+cp *.so ../matching-service-cpp/
+cp *.so ../clearing-cpp/
+make clean
+
+cp /usr/lib/libmysqlcppconn.so* ../Run-Project/so/
+cp /usr/lib/x86_64-linux-gnu/libmysqlclient.so* ../Run-Project/so/
+cp /usr/lib/x86_64-linux-gnu/libboost_chrono.so* ../Run-Project/so/
+
+# 编译生成LogStore程序
+cd ../matching-service-cpp/
+./build.sh
+
+cd ../clearing-cpp/
+./build.sh

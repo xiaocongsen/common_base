@@ -26,12 +26,14 @@ CCfg::CCfg(const char *pCfgFile) : m_KeyVal(NULL)
 		{
 				const char *key2value[] = {
 				"/* 默认配置文件 */\n\n"
+				"MarketId = USDT\n"
+				"CoinId = BTC\n"
 				"ThreadCount = 3\n"
 				"DBIP = 192.168.1.201\n"
 				"DBPort = 3306\n"
 				"USER = root\n"
 				"PASSWD = Aa123456\n"
-				"DataBaseName = beta\n"
+				"DataBaseName = onerootbeta\n"
 				"LogUil = 192.168.1.203:5000/programExceptionLog\n"
 			};
 			createFile(pCfgFile, key2value, (int)(sizeof(key2value) / sizeof(key2value[0]))); // 创建配置文件
@@ -125,7 +127,7 @@ void CCfg::destroyKV()
 	{
 		delKV = m_KeyVal;
 		m_KeyVal = m_KeyVal->pNext;
-		DELETE(delKV);
+		delete delKV;
 	}
 }
 
