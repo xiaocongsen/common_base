@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.5)
+project(common_base)
+set(CMAKE_BUILD_TYPE "Debug")
+
+
+set(common-target common-base-lib)
+include_directories(./public-lib ./curl-lib ./jemalloc-lib )
+include_directories(./Json-lib ./mysql-lib ./rabbitmq-lib )
+include_directories(./thread-lib ./redis-lib)
+aux_source_directory(./public-lib common-src)
+aux_source_directory(./curl-lib common-src)
+aux_source_directory(./jemalloc-lib common-src)
+aux_source_directory(./Json-lib common-src)
+aux_source_directory(./mysql-lib common-src)
+aux_source_directory(./rabbitmq-lib common-src)
+aux_source_directory(./thread-lib common-src)
+aux_source_directory(./redis-lib common-src)
+add_definitions(-std=c++11)
+# add_library(${common-target} SHARED ${common-src}) # SHARED
+add_library(${common-target} STATIC ${common-src}) # STATIC
+# target_link_libraries(${common-target} SimpleAmqpClient)
+
+# set(matching-target matching-service-cpp.bin)
+# include_directories(./BB-project/matching-service-cpp/include ./common-module/market-data-module)
+# include_directories(./public-lib ./curl-lib ./jemalloc-lib )
+# include_directories(./Json-lib ./mysql-lib ./rabbitmq-lib )
+# include_directories(./thread-lib ./redis-lib)
+# aux_source_directory(./BB-project/matching-service-cpp/src entrust-src)
+# aux_source_directory(./common-module/market-data-module entrust-src)
+# add_definitions(-std=c++11)
+# add_executable(${matching-target} ${entrust-src})
+# link_directories(./build)
+# target_link_libraries(${matching-target} common-base-lib SimpleAmqpClient pthread hiredis curl mysqlcppconn jemalloc )
